@@ -1,0 +1,187 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 20 }] }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"docker\", compose=~\"$compose\", container=~\"$container\", service=~\"$service\"} |~ \"(?i)(\\\\berror\\\\b|exception|fatal|panic|traceback|stacktrace|level[=:]error|\\\"level\\\":\\\"error\\\"| 5[0-9]{2})\" [$__interval]))",
+          "legendFormat": "erros",
+          "refId": "A"
+        }
+      ],
+      "title": "Erros (nível error / exception / 5xx)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"docker\", compose=~\"$compose\", container=~\"$container\", service=~\"$service\"} |~ \"(?i)( 5[0-9]{2} |status[=:]5|HTTP/1\\\\.[01]\\\" 5)\" [$__interval]))",
+          "legendFormat": "5xx",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP 5xx",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"docker\", compose=~\"$compose\", container=~\"$container\", service=~\"$service\"} |~ \"(?i)(exception|traceback|stacktrace|panic|fatal)\" [$__interval]))",
+          "legendFormat": "stacks",
+          "refId": "A"
+        }
+      ],
+      "title": "Exceptions / stack traces",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "count(sum by (container) (count_over_time({job=\"docker\", compose=~\"$compose\"} |~ \"(?i)(\\\\berror\\\\b|exception|fatal|panic| 5[0-9]{2})\" [$__interval])))",
+          "legendFormat": "containers",
+          "refId": "A"
+        }
+      ],
+      "title": "Containers com erro",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 1, "spanNulls": true }, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "expr": "sum by (compose) (count_over_time({job=\"docker\", compose=~\"$compose\", container=~\"$container\", service=~\"$service\"} |~ \"(?i)(\\\\berror\\\\b|exception|fatal|panic|traceback|stacktrace|level[=:]error| 5[0-9]{2})\" [$__interval]))",
+          "legendFormat": "{{compose}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Taxa de erros por compose / stack",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 1, "spanNulls": true }, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "expr": "sum by (container) (count_over_time({job=\"docker\", compose=~\"$compose\", container=~\"$container\", service=~\"$service\"} |~ \"(?i)(\\\\berror\\\\b|exception|fatal|panic|traceback|stacktrace|level[=:]error| 5[0-9]{2})\" [$__interval]))",
+          "legendFormat": "{{container}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Taxa de erros por container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 12 },
+      "id": 7,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"docker\", compose=~\"$compose\", container=~\"$container\", service=~\"$service\"} |~ \"(?i)(\\\\berror\\\\b|exception|fatal|panic|traceback|stacktrace|level[=:]error|\\\"level\\\":\\\"error\\\"| 5[0-9]{2})\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Logs de erro (todas as apps)",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["dokploy", "errors", "loki", "observability"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".+",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "includeAll": true,
+        "label": "compose",
+        "multi": true,
+        "name": "compose",
+        "query": "label_values({job=\"docker\"}, compose)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".+",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "includeAll": true,
+        "label": "container",
+        "multi": true,
+        "name": "container",
+        "query": "label_values({job=\"docker\", compose=~\"$compose\"}, container)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".+",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "includeAll": true,
+        "label": "service",
+        "multi": true,
+        "name": "service",
+        "query": "label_values({job=\"docker\", compose=~\"$compose\"}, service)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Erros globais — todas as apps",
+  "uid": "dokploy-global-errors",
+  "version": 1
+}

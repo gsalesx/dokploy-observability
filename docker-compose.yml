@@ -139,9 +139,6 @@ services:
               - host: unix:///var/run/docker.sock
                 refresh_interval: 5s
             relabel_configs:
-              - source_labels: [__meta_docker_container_label_com_docker_compose_service]
-                regex: 'promtail'
-                action: drop
               - source_labels: [__meta_docker_container_name]
                 regex: '.*promtail.*'
                 action: drop
@@ -150,26 +147,27 @@ services:
                 target_label: job
               - source_labels: [__meta_docker_container_name]
                 target_label: container
-              - source_labels: [__meta_docker_container_label_com_docker_compose_service]
-                regex: '.+'
-                target_label: service
-              - source_labels: [__meta_docker_container_label_com_docker_swarm_service_name]
-                regex: '.+'
-                target_label: service
-              - source_labels: [__meta_docker_container_label_com_docker_compose_project]
-                regex: '.+'
+              - source_labels: [__meta_docker_container_name]
+                regex: '/(.+)-([A-Za-z0-9_]+)-[0-9]+'
+                replacement: '$${1}'
                 target_label: compose
-              - source_labels: [__meta_docker_container_label_com_docker_stack_namespace]
-                regex: '.+'
+              - source_labels: [__meta_docker_container_name]
+                regex: '/(.+)-([A-Za-z0-9_]+)-[0-9]+'
+                replacement: '$${2}'
+                target_label: service
+              - source_labels: [__meta_docker_container_name]
+                regex: '/([^.]+)\.[0-9]+\..+'
+                replacement: '$${1}'
                 target_label: compose
               - source_labels: [compose]
                 regex: '^$'
                 replacement: standalone
                 target_label: compose
-              - source_labels: [__meta_docker_container_image]
-                target_label: image
             pipeline_stages:
               - docker: {}
+              - drop:
+                  older_than: 48h
+                  drop_counter_reason: too_old
               - static_labels:
                   job: docker
         PROMTAIL
